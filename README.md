@@ -10,10 +10,12 @@
       - [Links](#links)
       - [Programmatic](#programmatic)
     - [Layouts](#layouts)
+    - [Dynamic navigation](#dynamic-navigation)
     - [Themes](#themes)
     - [Error Boundaries](#error-boundaries)
     - [Search params](#search-params)
     - [Redirecting](#redirecting)
+    - [Status bar](#status-bar)
     - [Navigation layouts](#navigation-layouts)
       - [Stack navigation](#stack-navigation)
       - [Tab navigation](#tab-navigation)
@@ -43,7 +45,6 @@
     - [Hooks](#hooks-1)
   - [Other](#other)
     - [Icon Button](#icon-button)
-    - [Tailwind Merge](#tailwind-merge)
 
 ## nativewind
 
@@ -245,6 +246,29 @@ export default function HomeLayout() {
 }
 ```
 
+### Dynamic navigation
+
+1. Create and register a dynamic screen using the `[]` syntax.
+
+```tsx
+const Example = () => {
+  return (
+    <Stack>
+      <Stack.Screen name="job-details/[jobId]" />
+    </Stack>
+  );
+};
+```
+
+2. Get the route params from the `useLocalSearchParams()` hook, which returns an object of all the dynamic route param values for that route.
+
+```tsx
+// job-details/[jobId].tsx
+export default function JobDetails() {
+  const params: { jobId: string } = useLocalSearchParams();
+}
+```
+
 ### Themes
 
 ```javascript
@@ -376,9 +400,30 @@ export default function Page() {
 
 The `<Redirect>` component takes in an `href` string prop, which is the route to redirect to.
 
+### Status bar
+
+This is how we'll handle statusbar styling:
+
+```tsx
+<Stack
+  screenOptions={{
+    // "dark" refers to color of statusbar items as gray, so you want this on light mode
+    // "light" renders statusbar items as white, so you want this on dark mode
+    statusBarStyle: !isDarkMode ? "dark" : "light",
+    statusBarTranslucent: true,
+  }}
+>
+```
+
+- `statusBarTranslucent` : makes the status bar translucent. This should be set to true
+- `statusBarStyle` : determines the color scheme of the status bar. `"dark"` is where the statusbar items have a gray text color, and `"light"` is where the statusbar items have a white text color.
+  - So whenever we're in dark mode, we want to set statusbar style to `"light"`, and whenever we're in light mode, we want to set it to `"dark"`.
+
 ### Navigation layouts
 
 We have an easier way of using native stack navigation, drawers, and tabs.
+
+By default, all files in the `app` router are registered as routes, so Screen components are only used for configuring individual screen options like titles and header style.
 
 #### Stack navigation
 
@@ -392,7 +437,7 @@ export default function Layout() {
 }
 ```
 
-There are two ways to add screens to a stack:
+There are two ways to configure stack screens
 
 - Nest `<Stack.Screen>` components within the `<Stack />` navigator statically
 - In the pages that your layouts nest, Render the `<Stack.Screen />` component, which allows you to change the look of the screen dynamically form the page itself instead of the layout.
@@ -499,6 +544,23 @@ export default function TabLayout() {
 #### Modal navigation
 
 Here is how we make a transparent modal:
+
+```tsx
+<Stack.Screen
+  name="profile"
+  options={{
+    presentation: "transparentModal",
+    headerShown: false,
+  }}
+/>
+```
+
+The `presentation` option determines how the screen is presented, with these possible values:
+
+- `modal` : provides a modal-like native experience on IOS, where you can dismiss the modal by swiping down.
+- `transparentModal` : provides a modal that overlays the current screen, so if you reduce the opacity of the modal screen, you'll be able to see the screen below.
+
+For android, we'll want to use the `transparentModal` option, and then make the background color of our modal screen translucent by giving it an rgba value.
 
 ### Hooks
 
@@ -852,12 +914,48 @@ Here are all the possible values you can get back from the `useUser()` hook:
 
 ### Icon Button
 
-### Tailwind Merge
+Using the font awesome expo vector icons, we can create a reusable icon button component:
 
+```tsx
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+
+interface IconButtonProps extends TouchableOpacityProps {
+  name: React.ComponentProps<typeof FontAwesome>["name"];
+  onPress: () => void;
+  color?: string;
+  size?: number;
+}
+
+export function IconButton({
+  onPress,
+  className = "",
+  color = "black",
+  name,
+  size = 24,
+  ...props
+}: IconButtonProps) {
+  return (
+    <TouchableOpacity className={className} onPress={onPress} {...props}>
+      <FontAwesome size={size} name={name} color={color} />
+    </TouchableOpacity>
+  );
+}
 ```
 
+Then here is how you would use it:
+
+```tsx
+<IconButton
+  name="search"
+  color="white"
+  className="bg-blue-500 rounded-lg p-2"
+  onPress={onPress}
+  size={28}
+/>
 ```
 
-```
-
-```
+- `name` : the icon name
+- `color` : the icon color
+- `className` : the class name for the button, if you want to add any extra styles
+- `onPress` : the function to run when the button is pressed
+- `size` : the size of the icon, defaults to 24

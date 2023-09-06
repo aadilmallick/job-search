@@ -7,6 +7,7 @@ const HomeLayout = () => {
   return (
     <Stack
       screenOptions={{
+        //TODO: explain this
         // "dark" refers to color of statusbar items as gray, so you want this on light mode
         // "light" renders statusbar items as white, so you want this on dark mode
         statusBarStyle: !isDarkMode ? "dark" : "light",
@@ -17,6 +18,7 @@ const HomeLayout = () => {
       <Stack.Screen name="index" />
       <Stack.Screen
         name="profile"
+        // TODO: explain this
         options={{
           presentation: "transparentModal",
           headerShown: false,

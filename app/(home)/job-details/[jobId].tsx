@@ -51,6 +51,7 @@ export default function JobDetails() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
+          {/* TODO: make tabs more generic */}
           {activeTab === "About" && <AboutTab data={jobDetails?.data[0]} />}
           {activeTab === "Qualifications" && (
             <QualificationsTab data={jobDetails?.data[0]} />
