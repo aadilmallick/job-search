@@ -6,8 +6,9 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Linking,
 } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import {
   JobDetailsResponse,
@@ -15,6 +16,8 @@ import {
 } from "../../../hooks/useFetchJobDetails";
 import { Image } from "expo-image";
 import { cn } from "../../../constants/tailwindMerge";
+import { IconButton } from "../../../components/Header";
+import SQLiteDB from "../../../constants/SQLiteDB";
 
 export default function JobDetails() {
   const params: { jobId: string } = useLocalSearchParams();
@@ -45,11 +48,15 @@ export default function JobDetails() {
       />
       <CompanyDetails data={jobDetails?.data[0]} />
       <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
-      <View className="flex-1 ">
+      <View className="flex-1 relative">
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          contentContainerStyle={{
+            paddingBottom: 50,
+            paddingHorizontal: 16,
+          }}
         >
           {/* TODO: make tabs more generic */}
           {activeTab === "About" && <AboutTab data={jobDetails?.data[0]} />}
@@ -60,8 +67,62 @@ export default function JobDetails() {
             <ResponsibilitiesTab data={jobDetails?.data[0]} />
           )}
         </ScrollView>
+        <Footer data={jobDetails?.data[0]} />
       </View>
     </SafeAreaView>
+  );
+}
+
+function Footer({ data }: CompanyDetailsProps) {
+  const url = data.job_google_link ?? "https://careers.google.com/jobs/results";
+  const [isFavorite, setIsFavorite] = React.useState(false);
+
+  useEffect(() => {
+    async function fetchFavorite() {
+      const result = await SQLiteDB.getJob(data.job_id);
+      if (result.data.length > 0) {
+        setIsFavorite(true);
+      }
+    }
+
+    fetchFavorite();
+  }, [data]);
+
+  return (
+    <View className="absolute bottom-0 left-0 w-full flex flex-row space-x-2">
+      <IconButton
+        name={isFavorite ? "heart" : "heart-o"}
+        color="red"
+        onPress={async () => {
+          // if already favorited and we're clicking on it again, remove from favorites
+          if (isFavorite) {
+            await SQLiteDB.deleteJob(data.job_id);
+            setIsFavorite(false);
+          }
+          // if not favorited, add to favorites
+          else {
+            await SQLiteDB.addJob({
+              employer_logo: data.employer_logo,
+              employer_name: data.employer_name,
+              job_id: data.job_id,
+              job_title: data.job_title,
+            });
+            setIsFavorite(true);
+          }
+        }}
+        className="bg-white/90 p-3 rounded-xl dark:bg-gray-600/90"
+        style={{ elevation: 10 }}
+      />
+      <TouchableOpacity
+        className="bg-blue-400 flex-1 px-8 py-3 rounded-2xl"
+        style={{ elevation: 10 }}
+        onPress={() => Linking.openURL(url)}
+      >
+        <Text className="text-white font-bold text-base text-center">
+          Apply Now
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -101,7 +162,7 @@ interface TabsProps {
 
 function Tabs({ activeTab, onTabChange }: TabsProps) {
   return (
-    <View>
+    <View className="border-b border-b-neutral-200">
       <ScrollView
         className="flex flex-row gap-x-4 py-2"
         horizontal
@@ -112,13 +173,13 @@ function Tabs({ activeTab, onTabChange }: TabsProps) {
             onPress={() => onTabChange(tab)}
             key={tab}
             className={cn(
-              "py-4 px-6 rounded-full bg-gray-50",
+              "py-4 px-6 rounded-full bg-gray-50 dark:bg-gray-600",
               activeTab === tab && "bg-blue-400 "
             )}
           >
             <Text
               className={cn(
-                "text-base font-light tracking-wide text-gray-500",
+                "text-base font-light tracking-wide text-gray-500 dark:text-gray-400",
                 activeTab === tab && "text-white"
               )}
             >

@@ -20,26 +20,27 @@ export default function PopularJobs({ jobs }: { jobs?: JobListing }) {
       className="py-4"
       showsHorizontalScrollIndicator={false}
       renderItem={({ item }) => (
-        <View className="bg-gray-50 rounded-lg p-4 shadow-lg w-64 dark:bg-gray-800 space-y-2">
-          <TouchableOpacity
-            className="bg-gray-300 w-16 h-16 rounded-lg overflow-hidden"
-            onPress={() => router.push(`/job-details/${item.job_id}`)}
-          >
+        <TouchableOpacity
+          className="bg-gray-50 rounded-lg p-4 shadow-lg w-64 dark:bg-gray-800 space-y-2"
+          onPress={() => router.push(`/job-details/${item.job_id}`)}
+        >
+          <View className="w-16 h-16 rounded-lg overflow-hidden">
             <Image
               source={item.employer_logo || blurhash}
               placeholder={blurhash}
               transition={1000}
               contentFit="contain"
-              className="w-full h-full object-contain"
+              className="w-full h-full"
             />
-          </TouchableOpacity>
+          </View>
+
           <Text className="text-gray-400 font-semibold">
             {item.employer_name}, {item.job_country}
           </Text>
           <Text className="text-lg font-bold dark:text-gray-500 leading-5 tracking-tighter">
             {item.job_title}
           </Text>
-        </View>
+        </TouchableOpacity>
       )}
       contentContainerStyle={{
         columnGap: 16,

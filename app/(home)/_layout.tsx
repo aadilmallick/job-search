@@ -24,7 +24,12 @@ const HomeLayout = () => {
           headerShown: false,
         }}
       />
-      <Stack.Screen name="job-details/[jobId]" />
+      <Stack.Screen
+        name="job-details/[jobId]"
+        options={{
+          title: "Job Details",
+        }}
+      />
     </Stack>
   );
 };

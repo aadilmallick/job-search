@@ -61,6 +61,7 @@ export default function Page() {
   const { error, jobs, isLoading, isFetching, status } = useGetJobs(params);
 
   const onPress = async () => {
+    if (!searchQuery) return;
     const employmentType = getJobTypeFromActiveType(activeType);
 
     const obj: Record<string, any> = {};
@@ -127,6 +128,7 @@ export default function Page() {
             )}
             onPress={() => {
               setActiveType(item.type);
+              if (!searchQuery) return;
               const obj: Record<string, any> = {};
               item.type === "Remote" && (obj["remote_jobs_only"] = true);
               setParams((prev) => ({
